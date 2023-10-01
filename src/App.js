@@ -12,23 +12,31 @@ import {
 
 function App() {
   const [newName, setNewName] = useState("");
-  const [newAge, setNewAge] = useState(0);
+  const [newAge, setNewAge] = useState(null);
   const [users, setUsers] = useState([]);
   const usersCollectionRef = collection(db, "users");
 
-  const createUser = async () => {
+  const [triggerEffect, setTriggerEffect] = useState(false);
+
+  const createUser = async (event) => {
+    event.preventDefault();
     await addDoc(usersCollectionRef, { name: newName, age: Number(newAge) });
+    setTriggerEffect(true);
+    setNewName("");
+    setNewAge("");
   };
 
   const updateUser = async (id, age) => {
     const userDoc = doc(db, "users", id);
     const newFields = { age: age + 1 };
     await updateDoc(userDoc, newFields);
+    setTriggerEffect(true);
   };
 
   const deleteUser = async (id) => {
     const userDoc = doc(db, "users", id);
     await deleteDoc(userDoc);
+    setTriggerEffect(true);
   };
 
   useEffect(() => {
@@ -38,24 +46,30 @@ function App() {
     };
 
     getUsers();
-  }, []);
+    setTriggerEffect(false);
+  }, [triggerEffect]);
 
   return (
     <div className="App">
-      <input
-        placeholder="Name..."
-        onChange={(event) => {
-          setNewName(event.target.value);
-        }}
-      />
-      <input
-        type="number"
-        placeholder="Age..."
-        onChange={(event) => {
-          setNewAge(event.target.value);
-        }}
-      />
-      <button onClick={createUser}>Create User</button>
+      <h1>Type below to create a user</h1>
+      <form onSubmit={createUser}>
+        <input
+          placeholder="Name..."
+          value={newName}
+          onChange={(event) => {
+            setNewName(event.target.value);
+          }}
+        />
+        <input
+          type="number"
+          placeholder="Age..."
+          value={newAge}
+          onChange={(event) => {
+            setNewAge(event.target.value);
+          }}
+        />
+        <button type="submit">Create User</button>
+      </form>
       {users.map((user) => {
         return (
           <div>
